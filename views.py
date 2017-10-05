@@ -9,8 +9,8 @@ from flask_security import login_required, roles_required, Security
 from forms import ExtendedLoginForm, TimeSheetForm, ApprovingForm
 
 security = Security(app, user_datastore, login_form=ExtendedLoginForm)
-   
-    
+
+
 class AppModelView(ModelView):
     """
     Admin Model view customization according to
@@ -65,7 +65,7 @@ def object_list(template_name, qr, var_name='object_list', **kwargs):
     kwargs[var_name] = qr.paginate(kwargs['page'])
     return render_template(template_name, **kwargs)
 
-    
+
 # retrieve a single object matching the specified query or 404 -- this uses the
 # shortcut "get" method on model, which retrieves a single object or raises a
 # DoesNotExist exception if no matching object exists
@@ -75,7 +75,7 @@ def get_object_or_404(model, *expressions):
         return model.get(*expressions)
     except model.DoesNotExist:
         abort(404)
-        
+
 
 @app.template_filter('total_time')
 def total_time(entry):
@@ -93,42 +93,42 @@ def hhmm(time):
     textual representation of time in format HH:MM
     """
     return time.strftime("%H:%M") if time else ''
-        
-        
+
+
 # views -- these are the actual mappings of url to view function
 @app.route('/')
 @login_required
 def homepage():
     return render_template("empty.html")
 
-    
+
 @app.route("/timesheet/<date:week_ending_date>", methods=["GET", "POST"])
-@app.route("/timesheet/")    
+@app.route("/timesheet/")
 @login_required
 def timesheet(week_ending_date=None):
     if week_ending_date is None:
         week_ending_date = current_week_ending_date()
         return redirect(url_for("timesheet", week_ending_date=week_ending_date))
-      
+
     breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
-    
+
     form = TimeSheetForm()
     timesheet = TimeSheet(
-        user=current_user, 
+        user=current_user,
         week_ending_date=week_ending_date)
-    
+
     if form.validate_on_submit():
         rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
         timesheet.update(rows)
-    
+
     return render_template("timesheet.html",
         timesheet=timesheet,
         form=form,
         breaks=breaks,
-        week_ending_date=week_ending_date, 
+        week_ending_date=week_ending_date,
         week_ending_dates=week_ending_dates())
-    
-    
+
+
 @app.route("/approve/<username>/<date:week_ending_date>", methods=["GET", "POST"])
 @app.route("/approve/<username>")
 @app.route("/approve/")
@@ -136,18 +136,18 @@ def timesheet(week_ending_date=None):
 @roles_required('approver')
 def approve(username=None, week_ending_date=None):
     if week_ending_date is None or username is None:
-    
+
         # grab first user and/or the curret week ending date:
         if week_ending_date is None:
             week_ending_date = current_week_ending_date()
-            
+
         if username is None:
             username = User.select().order_by(
                 User.first_name, User.last_name).limit(1).execute().next().username
 
         return redirect(url_for(
                             "approve",
-                            username=username, 
+                            username=username,
                             week_ending_date=week_ending_date))
 
     breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
@@ -158,13 +158,13 @@ def approve(username=None, week_ending_date=None):
 
     form = ApprovingForm()
     timesheet = TimeSheet(
-        user=selected_user, 
+        user=selected_user,
         week_ending_date=week_ending_date)
 
     if form.validate_on_submit():
         rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
         timesheet.approve(rows)
-        
+
     return render_template("approve.html",
         timesheet=timesheet,
         form=form,
@@ -174,7 +174,7 @@ def approve(username=None, week_ending_date=None):
         week_ending_date=week_ending_date,
         week_ending_dates=week_ending_dates())
 
-        
+
 @app.route("/report/<date:from_date>/<date:to_date>/<company_code>")
 @app.route("/report/<date:from_date>/<date:to_date>")
 @app.route("/report/")
@@ -192,15 +192,15 @@ def report(company_code=None, from_date=None, to_date=None):
         query = (Entry.select(Entry, User, Company.code)
             .join(User, on=User.approved_by).join(Company)
             .where(
-                (Entry.date >= from_date) & 
+                (Entry.date >= from_date) &
                 (Entry.date <= to_date)))
-                
+
         if not include_unapproved:
             query = query.where(Entry.is_approved == True)
-            
+
         if selected_company:
             query = query.where(Company.code == company_code)
-            
+
         entries = query.execute()
     else:
         entries = []
@@ -351,4 +351,4 @@ def report(company_code=None, from_date=None, to_date=None):
 # @app.context_processor
 # def _inject_user():
     # return {'current_user': get_current_user()}
-    
+
