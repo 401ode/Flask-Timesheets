@@ -6,6 +6,7 @@ from flask_login import UserMixin
 
 from state_time.database import Column, Model, SurrogatePK, db, reference_col, relationship
 from state_time.extensions import bcrypt
+# from state_time.agencies.models import Agency, CostCenter
 
 
 class Role(SurrogatePK, Model):
@@ -33,11 +34,16 @@ class User(UserMixin, SurrogatePK, Model):
     email = Column(db.String(80), unique=True, nullable=False)
     #: The hashed password
     password = Column(db.Binary(128), nullable=True)
-    created_at = Column(db.DateTime, nullable=False, default=dt.datetime.utcnow)
+    created_at = Column(
+        db.DateTime,
+        nullable=False,
+        default=dt.datetime.utcnow)
     first_name = Column(db.String(30), nullable=True)
     last_name = Column(db.String(30), nullable=True)
     active = Column(db.Boolean(), default=False)
     is_admin = Column(db.Boolean(), default=False)
+    is_supervisor = Column(db.Boolean(), default=False)
+    employee_id = Column(db.IntegerField, unique=True, nullable=False)
 
     def __init__(self, username, email, password=None, **kwargs):
         """Create instance."""
