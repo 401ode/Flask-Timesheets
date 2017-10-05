@@ -1,0 +1,17 @@
+flask
+flask-script
+flask-wtf
+#py-bcrypt
+flask-bcrypt
+flask-admin
+python-slugify
+flask-login
+peewee
+peewee_migrate
+flask-security
+flask-peewee
+autopep8
+
+# for testing:
+git+https://github.com/mgood/flask-debugtoolbar.git # flask-debugtoolbar
+faker

@@ -1,10 +1,11 @@
-error.log*
-*.py[co]
-*.DS_*
+*.py[cod]
+
+# C extensions
+*.so
+
 # Packages
 *.egg
 *.egg-info
-dist
 build
 eggs
 parts
@@ -13,6 +14,8 @@ var
 sdist
 develop-eggs
 .installed.cfg
+lib
+lib64
 
 # Installer logs
 pip-log.txt
@@ -20,13 +23,35 @@ pip-log.txt
 # Unit test / coverage reports
 .coverage
 .tox
+nosetests.xml
 
-#Translations
+# Translations
 *.mo
 
-#Mr Developer
-venv
-*.pyc
-build
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
 
+# Complexity
+output/*.html
+output/*/index.html
+
+# Sphinx
+docs/_build
+
+.webassets-cache
+
+# Virtualenvs
+env/
+venv/
+
+# npm
+/node_modules/
+
+# webpack-built files
+/state_time/static/build/
+/state_time/webpack/manifest.json
+
+# SQLite Timesheet DB.
 timesheet.db
