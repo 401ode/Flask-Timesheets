@@ -17,9 +17,18 @@ class AppModelView(ModelView):
     """
 
     column_formatters = dict(
-        started_at=lambda v, c, m, p: m.started_at.strftime("%H:%M"),
-        finished_at=lambda v, c, m, p: m.finished_at.strftime("%H:%M"),
-        modified_at=lambda v, c, m, p: m.modified_at.strftime("%Y-%m-%d %H:%M"),
+        started_at=lambda v,
+        c,
+        m,
+        p: m.started_at.strftime("%H:%M"),
+        finished_at=lambda v,
+        c,
+        m,
+        p: m.finished_at.strftime("%H:%M"),
+        modified_at=lambda v,
+        c,
+        m,
+        p: m.modified_at.strftime("%Y-%m-%d %H:%M"),
     )
 
     def is_accessible(self):
@@ -47,6 +56,7 @@ class AppModelView(ModelView):
 class UserView(AppModelView):
     can_create = False
     column_exclude_list = ['password']
+
 
 admin.add_view(AppModelView(Break))
 admin.add_view(UserView(User))
@@ -108,9 +118,15 @@ def homepage():
 def timesheet(week_ending_date=None):
     if week_ending_date is None:
         week_ending_date = current_week_ending_date()
-        return redirect(url_for("timesheet", week_ending_date=week_ending_date))
+        return redirect(
+            url_for(
+                "timesheet",
+                week_ending_date=week_ending_date))
 
-    breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
+    breaks = Break.select(
+        Break.id,
+        Break.name).order_by(
+        Break.minutes).execute()
 
     form = TimeSheetForm()
     timesheet = TimeSheet(
@@ -118,18 +134,23 @@ def timesheet(week_ending_date=None):
         week_ending_date=week_ending_date)
 
     if form.validate_on_submit():
-        rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
+        rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys(
+        ) if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
         timesheet.update(rows)
 
     return render_template("timesheet.html",
-        timesheet=timesheet,
-        form=form,
-        breaks=breaks,
-        week_ending_date=week_ending_date,
-        week_ending_dates=week_ending_dates())
+                           timesheet=timesheet,
+                           form=form,
+                           breaks=breaks,
+                           week_ending_date=week_ending_date,
+                           week_ending_dates=week_ending_dates())
 
 
-@app.route("/approve/<username>/<date:week_ending_date>", methods=["GET", "POST"])
+@app.route(
+    "/approve/<username>/<date:week_ending_date>",
+    methods=[
+        "GET",
+        "POST"])
 @app.route("/approve/<username>")
 @app.route("/approve/")
 @login_required
@@ -146,11 +167,14 @@ def approve(username=None, week_ending_date=None):
                 User.first_name, User.last_name).limit(1).execute().next().username
 
         return redirect(url_for(
-                            "approve",
-                            username=username,
-                            week_ending_date=week_ending_date))
+            "approve",
+            username=username,
+            week_ending_date=week_ending_date))
 
-    breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
+    breaks = Break.select(
+        Break.id,
+        Break.name).order_by(
+        Break.minutes).execute()
     users = User.select().order_by(
         User.first_name, User.last_name).execute()
 
@@ -162,17 +186,18 @@ def approve(username=None, week_ending_date=None):
         week_ending_date=week_ending_date)
 
     if form.validate_on_submit():
-        rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
+        rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys(
+        ) if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
         timesheet.approve(rows)
 
     return render_template("approve.html",
-        timesheet=timesheet,
-        form=form,
-        breaks=breaks,
-        selected_user = selected_user,
-        users = users,
-        week_ending_date=week_ending_date,
-        week_ending_dates=week_ending_dates())
+                           timesheet=timesheet,
+                           form=form,
+                           breaks=breaks,
+                           selected_user=selected_user,
+                           users=users,
+                           week_ending_date=week_ending_date,
+                           week_ending_dates=week_ending_dates())
 
 
 @app.route("/report/<date:from_date>/<date:to_date>/<company_code>")
@@ -190,13 +215,13 @@ def report(company_code=None, from_date=None, to_date=None):
 
     if from_date and to_date:
         query = (Entry.select(Entry, User, Company.code)
-            .join(User, on=User.approved_by).join(Company)
-            .where(
+                 .join(User, on=User.approved_by).join(Company)
+                 .where(
                 (Entry.date >= from_date) &
                 (Entry.date <= to_date)))
 
         if not include_unapproved:
-            query = query.where(Entry.is_approved == True)
+            query = query.where(Entry.is_approved)
 
         if selected_company:
             query = query.where(Company.code == company_code)
@@ -205,16 +230,16 @@ def report(company_code=None, from_date=None, to_date=None):
     else:
         entries = []
 
-    week_start_dates=(d + timedelta(days=6) for d in week_ending_dates())
+    week_start_dates = (d + timedelta(days=6) for d in week_ending_dates())
     return render_template("report.html",
-        include_unapproved=include_unapproved,
-        entries=entries,
-        from_date=from_date,
-        to_date=to_date,
-        selected_company = selected_company,
-        companies = companies,
-        week_ending_dates=week_ending_dates(),
-        week_start_dates=week_start_dates)
+                           include_unapproved=include_unapproved,
+                           entries=entries,
+                           from_date=from_date,
+                           to_date=to_date,
+                           selected_company=selected_company,
+                           companies=companies,
+                           week_ending_dates=week_ending_dates(),
+                           week_start_dates=week_start_dates)
 
 
 # @app.route('/private/')
@@ -236,22 +261,22 @@ def report(company_code=None, from_date=None, to_date=None):
 # @app.route('/join/', methods=['GET', 'POST'])
 # def join():
     # if request.method == 'POST' and request.form['username']:
-        # try:
-            # with db.transaction():
-                # # Attempt to create the user. If the username is taken, due to the
-                # # unique constraint, the database will raise an IntegrityError.
-                # user = User.create(
-                    # username=request.form['username'],
-                    # password=md5((request.form['password']).encode('utf-8')).hexdigest(),
-                    # email=request.form['email'],
-                    # join_date=datetime.now())
+    # try:
+    # with db.transaction():
+    # # Attempt to create the user. If the username is taken, due to the
+    # # unique constraint, the database will raise an IntegrityError.
+    # user = User.create(
+    # username=request.form['username'],
+    # password=md5((request.form['password']).encode('utf-8')).hexdigest(),
+    # email=request.form['email'],
+    # join_date=datetime.now())
 
-            # # mark the user as being 'authenticated' by setting the session vars
-            # auth_user(user)
-            # return redirect(url_for('homepage'))
+    # # mark the user as being 'authenticated' by setting the session vars
+    # auth_user(user)
+    # return redirect(url_for('homepage'))
 
-        # except IntegrityError:
-            # flash('That username is already taken')
+    # except IntegrityError:
+    # flash('That username is already taken')
 
     # return render_template('join.html')
 
@@ -261,15 +286,15 @@ def report(company_code=None, from_date=None, to_date=None):
     # twitter_login so that it doesn't clash with blog's login
     # """
     # if request.method == 'POST' and request.form['username']:
-        # try:
-            # user = User.get(
-                # username=request.form['username'],
-                # password=md5((request.form['password']).encode('utf-8')).hexdigest())
-        # except User.DoesNotExist:
-            # flash('The password entered is incorrect')
-        # else:
-            # auth_user(user)
-            # return redirect(url_for('homepage'))
+    # try:
+    # user = User.get(
+    # username=request.form['username'],
+    # password=md5((request.form['password']).encode('utf-8')).hexdigest())
+    # except User.DoesNotExist:
+    # flash('The password entered is incorrect')
+    # else:
+    # auth_user(user)
+    # return redirect(url_for('homepage'))
 
     # return render_template('login.html')
 
@@ -306,19 +331,20 @@ def report(company_code=None, from_date=None, to_date=None):
     # # the messages -- user.message_set.  could also have written it as:
     # # Message.select().where(user=user).order_by(('pub_date', 'desc'))
     # messages = user.message_set
-    # return object_list('user_detail.html', messages, 'message_list', user=user)
+    # return object_list('user_detail.html', messages, 'message_list',
+    # user=user)
 
 # @app.route('/users/<username>/follow/', methods=['POST'])
 # @login_required
 # def user_follow(username):
     # user = get_object_or_404(User, User.username == username)
     # try:
-        # with db.transaction():
-            # Relationship.create(
-                # from_user=get_current_user(),
-                # to_user=user)
+    # with db.transaction():
+    # Relationship.create(
+    # from_user=get_current_user(),
+    # to_user=user)
     # except IntegrityError:
-        # pass
+    # pass
 
     # flash('You are following %s' % user.username)
     # return redirect(url_for('user_detail', username=user.username))
@@ -328,8 +354,8 @@ def report(company_code=None, from_date=None, to_date=None):
 # def user_unfollow(username):
     # user = get_object_or_404(User, User.username == username)
     # Relationship.delete().where(
-        # (Relationship.from_user == get_current_user()) &
-        # (Relationship.to_user == user)
+    # (Relationship.from_user == get_current_user()) &
+    # (Relationship.to_user == user)
     # ).execute()
     # flash('You are no longer following %s' % user.username)
     # return redirect(url_for('user_detail', username=user.username))
@@ -339,16 +365,15 @@ def report(company_code=None, from_date=None, to_date=None):
 # def create():
     # user = get_current_user()
     # if request.method == 'POST' and request.form['content']:
-        # message = Message.create(
-            # user=user,
-            # content=request.form['content'],
-            # pub_date=datetime.now())
-        # flash('Your message has been created')
-        # return redirect(url_for('user_detail', username=user.username))
+    # message = Message.create(
+    # user=user,
+    # content=request.form['content'],
+    # pub_date=datetime.now())
+    # flash('Your message has been created')
+    # return redirect(url_for('user_detail', username=user.username))
 
     # return render_template('create.html')
 
 # @app.context_processor
 # def _inject_user():
     # return {'current_user': get_current_user()}
-
