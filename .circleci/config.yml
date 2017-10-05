@@ -13,7 +13,8 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+      - image: circleci/postgres:9.4
+      - image: image: circleci/node:latest
 
     working_directory: ~/repo
 
@@ -26,29 +27,45 @@ jobs:
           - v1-dependencies-{{ checksum "requirements.txt" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-
       - run:
-          name: install dependencies
+          name: install python dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            npm install
             export FLASK_DEBUG=0
-            npm run build
-            flask run
-
       - save_cache:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
-
+     - run:
+          name: Update npm
+          command: 'sudo npm install -g npm@latest'
+     - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+     - run:
+          name: Install npm dependencies.
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: build/migrate all the things.
+          command: |
+            npm run build
+            flask db init
+            flask db migrate
+            flask db upgrade
       # run tests!
       - run:
           name: run tests
           command: |
             . venv/bin/activate
             flask test
+      - run:
+          name: run flask
+          command: flask run
 
       - store_artifacts:
           path: test-reports
