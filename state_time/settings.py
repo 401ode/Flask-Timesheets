@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Application configuration."""
 import os
+import binascii
 
 
 class Config(object):
@@ -8,7 +9,7 @@ class Config(object):
 
     SECRET_KEY = os.environ.get(
         'STATE_TIME_SECRET',
-        'secret-key')  # TODO: Change me
+        binascii.hexlify(os.urandom(32)))  # Done.
     APP_DIR = os.path.abspath(os.path.dirname(__file__))  # This directory
     PROJECT_ROOT = os.path.abspath(os.path.join(APP_DIR, os.pardir))
     BCRYPT_LOG_ROUNDS = 13
