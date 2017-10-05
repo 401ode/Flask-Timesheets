@@ -11,11 +11,16 @@ A lightweight timesheet system for State (or whomever) employees. A fork of [nad
 
 # TODO
 - Move to PostgreSQL for Heroku purposes.
-- Add allocations model.
-- Update Data Models for users, etc.
-- 12-Factor-ize, particurly for ENV variables.
+- Create allocations model.
+- Update Data Models for:
+    - Agency
+    - User
+- 12-Factor-ize, particularly for ENV variables.
+- Remove raw sql queries in favor of pee-wee or SQLAlchemy
+- Break out Documentation for Docker Dev v. Non-Docker Dev
+- 
 
-# High-Level Object Design
+# High-Level Object Design (Not Yet Fully Implemented)
 
 - Users / Employees:
 	- Initial Import from Payroll System of:
@@ -117,26 +122,27 @@ docker run --name mysql-client -it --link db:mysql --rm mariadb sh -c 'exec mysq
 
 ## Create image for the app:
 ```
-docker build -t flask_blog .
+docker build -t state_time .
 ## -t -- tag
 ```
 ## Run a container with the new image:
 
 ```
-docker run -id -p 5000:5000 -v $HOME/flask_blog:/opt/flask_blog --name blog --link db:mysql flask_blog bash
+docker run -id -p 5000:5000 -v $HOME/:/opt/state_time --name blog --link db:mysql state_time bash
 # -id -- interactive and daemon
 # -v -- mount a volume 
 ```
 
 ### To access docker, create tables, and start the app:
 
+**This does not work at all, at the moment:**
 ```
 docker exec -it blog bash 
 # -it -- interactive terminal
 
 ./manage.py shell
-from flask_blog inport db
-db.create_all()
+from state_time import db
+db.create_all() ##
 ^D
 ./manage.py runserver
 ```

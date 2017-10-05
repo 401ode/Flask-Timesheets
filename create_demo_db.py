@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from flask_timesheets import bcrypt, week_day_dates, encrypt_password, app
+from state_time import bcrypt, week_day_dates, encrypt_password, app
 from models import *
 from itertools import product
 from datetime import time
@@ -16,13 +16,13 @@ if isinstance(db, FlaskDB):
     _db = db.database
 else:
     _db = db
-    
+
 if os.path.exists(_db.database):
     try:
         os.remove(_db.database)
     except:  ## if fails, drop all model tables:
-        drop_talbes()
-    
+        drop_tables()
+
 # create all tales from the scratch:
 create_tables()
 
@@ -75,7 +75,7 @@ with app.app_context():
     test_password = encrypt_password('12345')
 for id, (username, email, first_name, last_name) in enumerate((
             ('user0', fake.email(), fake.first_name(), fake.last_name()),
-            ('user1',  fake.email(), fake.first_name(), fake.last_name()), 
+            ('user1',  fake.email(), fake.first_name(), fake.last_name()),
             ('user2', fake.email(), fake.first_name(), fake.last_name()),
             ('approver0', fake.email(), fake.first_name(), fake.last_name()),
             ('approver1', fake.email(), fake.first_name(), fake.last_name()),
@@ -101,8 +101,8 @@ for id, (username, email, first_name, last_name) in enumerate((
             user.roles.add(admin)
     user.save()
 
-    
-# Timesheet entires
+
+# Timesheet entries
 week_dates = list(week_day_dates())
 for no, (user, day) in enumerate(product(User.select(), week_dates)):
     entry = Entry(

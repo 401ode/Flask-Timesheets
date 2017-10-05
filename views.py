@@ -1,4 +1,4 @@
-from flask_timesheets import app, db, admin, ModelView, current_user, current_week_ending_date, week_ending_dates, timedelta
+from state_time import app, db, admin, ModelView, current_user, current_week_ending_date, week_ending_dates, timedelta
 from flask import g, render_template, redirect, flash, url_for, session, abort, request
 from models import User, Role, Company, Break, Entry, TimeSheet, user_datastore
 from peewee import IntegrityError

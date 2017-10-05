@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
     TextField, IntegerField, DateField, TimeField, BooleanField
-from flask_timesheets import db, FlaskDB, app, current_user, \
+from state_time import db, FlaskDB, app, current_user, \
     current_week_ending_date, str_to_time
 from hashlib import md5
 from flask_security import PeeweeUserDatastore, UserMixin, \
